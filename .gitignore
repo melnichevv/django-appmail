@@ -52,6 +52,9 @@ coverage.xml
 # Django stuff:
 *.log
 
+# Sqlite databases
+*.db
+
 # Sphinx documentation
 docs/_build/
 
@@ -60,3 +63,6 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+test_rerun.txt
+test_failures.txt

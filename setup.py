@@ -3,6 +3,8 @@ Setup file for django-appmail.
 """
 import os
 from setuptools import setup
+from pip.req import parse_requirements
+
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 
@@ -20,11 +22,22 @@ for l in [line for line in tuple(open('appmail/__init__.py', 'r')) if line[:2] =
     t = l.split('=')
     meta[t[0].strip().strip('__')] = t[1].strip().strip('\'')
 
+
+install_reqs = parse_requirements(
+    'requirements.txt',
+    session=False
+)
+
+reqs = [str(ir.req) for ir in install_reqs]
+
 setup(
     name=meta['title'],
     version=meta['version'],
-    packages=['appmail', 'appmail.backends'],
-    install_requires=['django>=1.8'],
+    packages=[
+        'appmail',
+        'appmail.backends',
+    ],
+    install_requires=reqs,
     include_package_data=True,
     description=meta['description'],
     long_description=README,
