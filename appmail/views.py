@@ -41,21 +41,7 @@ def render_template_body(request, template_id):
 
     """
     template = get_object_or_404(EmailTemplate, id=template_id)
-    format = request.GET.get('format', 'plain')
-    context = request.GET.dict()
-    if format == 'plain':
-        return HttpResponse(
-            template.render_body(context, content_type=EmailTemplate.CONTENT_TYPE_PLAIN),
-            content_type=EmailTemplate.CONTENT_TYPE_PLAIN
-        )
-    elif format == 'html':
-        return HttpResponse(
-            template.render_body(context, content_type=EmailTemplate.CONTENT_TYPE_HTML),
-            content_type=EmailTemplate.CONTENT_TYPE_HTML
-        )
-    else:
-        return HttpResponse(
-            "Invalid template format: '{}' - must be 'plain' or 'html'.".format(format),
-            content_type='text/plain',
-            status=400
-        )
+    content_type = 'text/{}'.format(request.GET.get('format', 'plain'))
+    context = template.dummy_context(content_type)
+    html = template.render_body(context, content_type)
+    return HttpResponse(html, content_type=content_type)

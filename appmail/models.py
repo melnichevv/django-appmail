@@ -12,6 +12,7 @@ from django.template import (
     TemplateSyntaxError
 )
 
+from . import helpers
 from .settings import VALIDATE_ON_SAVE
 
 
@@ -151,6 +152,39 @@ class EmailTemplate(models.Model):
             return {field_name: str(ex)}
         else:
             return {}
+
+    def variables(self, content_type):
+        """Return list of variables used in template content."""
+        assert content_type in EmailTemplate.CONTENT_TYPES, ("Invalid content type.")
+        if content_type == EmailTemplate.CONTENT_TYPE_PLAIN:
+            return helpers.extract_vars(self.body_text)
+        if content_type == EmailTemplate.CONTENT_TYPE_HTML:
+            return helpers.extract_vars(self.body_html)
+
+    def dummy_context(self, content_type):
+        """
+        Generate dummy context.
+
+        This function will take the list of variables defined and convert that into
+        a dict, which is then populated using the name of the variable. It basically
+        replaces variable placeholders with strings that represent the variables.
+
+        It's not done in situ (i.e. just replace the value in the content) so that
+        you can manipulate the template context if you wish.
+
+        variables in template = ['a', 'b.c']
+        converts to:
+        {
+            'a': '{{ A }}',
+            'b': {
+                'c': '{{ C }}'
+            }
+        }
+
+        """
+        tree = helpers.list_to_dict(self.variables(content_type))
+        helpers.populate(tree, lambda k: '{{ ' + k.upper() + ' }}')
+        return tree
 
     def create_message(self, context, **email_kwargs):
         """
